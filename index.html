@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+<title>ENOX AR</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{
+ width:100%;
+ height:100%;
+ background:#000;
+ overflow:hidden;
+ font-family:Arial;
+ touch-action:manipulation;
+}
+
+/* ================= INTRO ================= */
+#splash{
+ position:fixed;inset:0;
+ display:flex;align-items:center;justify-content:center;
+ background:#000;
+}
+#lights{
+ position:absolute;inset:-10%;
+ background:
+  radial-gradient(circle at 20% 50%, rgba(255,0,0,.55), transparent 60%),
+  radial-gradient(circle at 80% 50%, rgba(0,120,255,.55), transparent 60%);
+ filter:blur(3px);
+ animation:blink 1s infinite alternate;
+}
+@keyframes blink{0%{opacity:.5}50%{opacity:.9}100%{opacity:.6}}
+
+#center{position:relative;text-align:center;z-index:2;padding:0 4vw}
+.logo{
+ width:170px;max-width:55vw;margin-bottom:18px;
+ animation:logoIn 2.6s ease forwards;
+ filter:drop-shadow(0 0 25px red) drop-shadow(0 0 45px crimson);
+}
+.text-box{
+ position:relative;
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ padding:0 18px;
+ height:48px;
+ border:2px solid #fff;
+ border-radius:12px;
+ overflow:hidden;
+ opacity:0;
+ animation:textBoxIn .9s ease forwards;
+ animation-delay:2.8s;
+}
+.text-box::before{
+ content:"";
+ position:absolute;
+ inset:-50%;
+ background:linear-gradient(120deg,transparent 42%,rgba(255,255,255,.9),transparent 58%);
+ animation:shine 2.2s linear infinite;
+}
+.text{
+ font-weight:900;
+ letter-spacing:2.2px;
+ font-size:clamp(11px,3.5vw,20px);
+ color:#fff;
+ white-space:nowrap;
+ text-shadow:0 0 6px #fff,0 0 14px rgba(255,255,255,.8);
+ animation:textGlow 1.5s infinite alternate;
+}
+@keyframes logoIn{
+ 0%{opacity:0;transform:scale(1.6);filter:blur(12px)}
+ 100%{opacity:1;transform:scale(1);filter:blur(0)}
+}
+@keyframes textBoxIn{to{opacity:1}}
+@keyframes shine{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+@keyframes textGlow{from{opacity:.7}to{opacity:1}}
+.fadeOut{animation:fadeOut 1s forwards}
+@keyframes fadeOut{to{opacity:0;transform:scale(1.05)}}
+
+#blackScreen{position:fixed;inset:0;background:#000;opacity:0;z-index:999}
+.blackFade{animation:blackFade 1.2s forwards}
+@keyframes blackFade{to{opacity:1}}
+
+/* ================= SCREENS ================= */
+.screen{
+ position:fixed;inset:0;background:#000;
+ display:none;align-items:center;justify-content:center;
+ z-index:1000;
+}
+.screen .box{
+ width:90vw;max-width:500px;
+ padding:40px;border-radius:24px;
+ text-align:center;color:#fff;
+ border:2px solid #0f0;
+ box-shadow:0 0 30px rgba(0,255,0,.6);
+}
+.screen button{
+ width:100%;padding:20px;
+ font-size:20px;border-radius:16px;margin-top:20px;
+}
+
+/* ================= CHOOSE FOOTER ================= */
+.choose-footer{
+ position:fixed;bottom:12px;width:100%;
+ text-align:center;font-size:12px;
+ color:rgba(255,255,255,.7)
+}
+
+/* ================= AR ================= */
+#camera{
+ position:fixed;inset:0;
+ width:100%;height:100%;
+ object-fit:cover;
+ display:none;z-index:10;
+}
+#overlay{
+ position:fixed;
+ display:none;
+ touch-action:none;
+ transform-origin:0 0;
+ z-index:40;
+}
+#overlay img{
+ width:200px;
+ pointer-events:none;
+}
+
+/* ================= CONTROLS ================= */
+#controls{
+ position:fixed;bottom:14px;right:14px;
+ display:none;flex-direction:column;gap:12px;z-index:50;
+}
+#controls button{
+ width:56px;height:56px;border-radius:50%;
+ border:none;background:#0f0;
+ font-size:20px;font-weight:900;
+}
+#moreBtn{
+ position:fixed;top:12px;right:12px;
+ width:44px;height:44px;border-radius:50%;
+ background:#0f0;font-size:22px;
+ display:none;z-index:60;
+}
+
+/* ================= NEON START ================= */
+.neon-start{
+ border:2px solid #0f0!important;
+ box-shadow:0 0 12px #0f0,0 0 30px #0f0;
+ animation:neonBlink 1s infinite alternate;
+}
+@keyframes neonBlink{
+ from{box-shadow:0 0 8px #0f0}
+ to{box-shadow:0 0 22px #0f0,0 0 50px #0f0}
+}
+</style>
+</head>
+
+<body>
+
+<!-- INTRO -->
+<div id="splash">
+ <div id="lights"></div>
+ <div id="center">
+  <img src="https://i.ibb.co/JFksJBkg/logo.png" class="logo" id="logo">
+  <div class="text-box" id="textBox">
+   <div class="text">HELL&nbsp;NOVA&nbsp;STUDIOS&nbsp;®&nbsp;PUBLICATION</div>
+  </div>
+ </div>
+</div>
+<div id="blackScreen"></div>
+
+<!-- WARNING -->
+<div class="screen" id="warning">
+ <div class="box">
+  <h3>⚠ WARNING</h3>
+  <p>This is an exclusive AR Drawing System.<br>Unauthorised copying strictly prohibited.</p>
+  <button onclick="showChoose()">I AGREE</button>
+ </div>
+</div>
+
+<!-- CHOOSE -->
+<div class="screen" id="choose">
+ <div class="box">
+  <button onclick="pickImg()">🎨 Choose Image</button>
+  <button id="startArBtn" onclick="startAR()">🚀 Start AR</button>
+ </div>
+ <div class="choose-footer">© 2026 HELL NOVA STUDIOS ®</div>
+</div>
+
+<!-- BRIGHTNESS -->
+<div class="screen" id="brightness">
+ <div class="box">
+  📱 Better experience ke liye brightness badhayein
+  <button onclick="closeBrightness()">I AGREE</button>
+ </div>
+</div>
+
+<video id="camera" autoplay muted playsinline></video>
+<div id="overlay"><img id="ovImg"></div>
+<input type="file" id="imgPick" accept="image/*" hidden>
+
+<div id="controls">
+ <button onclick="opUp()">＋</button>
+ <button onclick="opDown()">−</button>
+ <button onclick="resetOverlay()">⟳</button>
+ <button onclick="noDisturb()">🚫</button>
+</div>
+<button id="moreBtn" onclick="showControls()">⋮</button>
+
+<script>
+const g=i=>document.getElementById(i);
+
+/* INTRO FLOW */
+setTimeout(()=>{
+ g("logo").classList.add("fadeOut");
+ g("textBox").classList.add("fadeOut");
+ setTimeout(()=>{
+  g("blackScreen").classList.add("blackFade");
+  setTimeout(()=>{
+   g("splash").style.display="none";
+   g("blackScreen").style.display="none";
+   g("warning").style.display="flex";
+  },1200);
+ },800);
+},6000);
+
+function showChoose(){g("warning").style.display="none";g("choose").style.display="flex"}
+function pickImg(){g("imgPick").click()}
+
+/* ===== SMOOTH OVERLAY ENGINE ===== */
+let overlay=g("overlay"),locked=false;
+let x=0,y=0,s=1,tx=0,ty=0,ts=1;
+let sx=0,sy=0,sd=0,mode="";
+
+function loop(){
+ x+=(tx-x)*0.25;
+ y+=(ty-y)*0.25;
+ s+=(ts-s)*0.18;
+ overlay.style.transform=`translate(${x}px,${y}px) scale(${s})`;
+ requestAnimationFrame(loop);
+}
+loop();
+
+overlay.addEventListener("touchstart",e=>{
+ if(locked)return;
+ if(e.touches.length===1){
+  mode="drag";
+  sx=e.touches[0].clientX-tx;
+  sy=e.touches[0].clientY-ty;
+ }
+ if(e.touches.length===2){
+  mode="zoom";
+  sd=Math.hypot(
+   e.touches[0].clientX-e.touches[1].clientX,
+   e.touches[0].clientY-e.touches[1].clientY
+  );
+ }
+},{passive:false});
+
+overlay.addEventListener("touchmove",e=>{
+ if(locked)return;
+ e.preventDefault();
+ if(mode==="drag"){
+  tx=e.touches[0].clientX-sx;
+  ty=e.touches[0].clientY-sy;
+ }
+ if(mode==="zoom"){
+  let d=Math.hypot(
+   e.touches[0].clientX-e.touches[1].clientX,
+   e.touches[0].clientY-e.touches[1].clientY
+  );
+  ts+=(d-sd)*0.006;
+  ts=Math.max(.3,Math.min(ts,4));
+  sd=d;
+ }
+},{passive:false});
+
+/* IMAGE PICK */
+g("imgPick").onchange=e=>{
+ g("ovImg").src=URL.createObjectURL(e.target.files[0]);
+ g("ovImg").onload=()=>{
+  overlay.style.display="block";
+  ts=1;s=1;
+  tx=(innerWidth-overlay.offsetWidth)/2;
+  ty=(innerHeight-overlay.offsetHeight)/2;
+  x=tx;y=ty;
+  overlay.style.opacity=.65;
+  g("startArBtn").classList.add("neon-start");
+ }
+}
+
+/* CONTROLS */
+function opUp(){overlay.style.opacity=Math.min((+overlay.style.opacity||.65)+.05,1)}
+function opDown(){overlay.style.opacity=Math.max((+overlay.style.opacity||.65)-.05,.1)}
+function resetOverlay(){ts=1;tx=(innerWidth-overlay.offsetWidth)/2;ty=(innerHeight-overlay.offsetHeight)/2}
+
+/* AR */
+function startAR(){
+ g("choose").style.display="none";
+ navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}).then(s=>{
+  g("camera").srcObject=s;
+  g("camera").play();
+  g("camera").style.display="block";
+  g("brightness").style.display="flex";
+ });
+}
+function closeBrightness(){g("brightness").style.display="none";g("controls").style.display="flex"}
+
+/* LOCK */
+function noDisturb(){locked=true;g("controls").style.display="none";g("moreBtn").style.display="block"}
+function showControls(){locked=false;g("controls").style.display="flex";g("moreBtn").style.display="none"}
+</script>
+
+</body>
+</html>
